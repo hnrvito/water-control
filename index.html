@@ -94,6 +94,62 @@ color:red;
 <div class="label">ESP32</div>
 <div class="value" id="online">---</div>
 </div>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
+<script>
+
+const client = mqtt.connect(
+'wss://7670300b39ba4d55a0ec6d11ce773787.s1.eu.hivemq.cloud:8884/mqtt',
+{
+username:'hnrvito',
+password:'Jangandiingat1'
+});
+
+client.on('connect', function(){
+
+console.log("MQTT Connected");
+
+client.subscribe("water/mode");
+client.subscribe("water/pump");
+client.subscribe("water/bak");
+client.subscribe("water/flow");
+client.subscribe("water/today");
+client.subscribe("water/lifetime");
+client.subscribe("water/alarm");
+client.subscribe("water/online");
+
+});
+
+client.on('message', function(topic,message){
+
+let value = message.toString();
+
+if(topic=="water/mode")
+document.getElementById("mode").innerHTML=value;
+
+if(topic=="water/pump")
+document.getElementById("pump").innerHTML=value;
+
+if(topic=="water/bak")
+document.getElementById("bak").innerHTML=value;
+
+if(topic=="water/flow")
+document.getElementById("flow").innerHTML=value;
+
+if(topic=="water/today")
+document.getElementById("today").innerHTML=value;
+
+if(topic=="water/lifetime")
+document.getElementById("lifetime").innerHTML=value;
+
+if(topic=="water/alarm")
+document.getElementById("alarm").innerHTML=value;
+
+if(topic=="water/online")
+document.getElementById("online").innerHTML=value;
+
+});
+
+</script>
 </body>
 </html>
