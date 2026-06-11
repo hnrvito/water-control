@@ -1,14 +1,99 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Water Control</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+margin:0;
+padding:10px;
+}
+
+h2{
+text-align:center;
+}
+
+.card{
+background:white;
+padding:15px;
+margin-bottom:10px;
+border-radius:12px;
+box-shadow:0 2px 5px rgba(0,0,0,.15);
+}
+
+.label{
+font-size:14px;
+color:#666;
+}
+
+.value{
+font-size:24px;
+font-weight:bold;
+margin-top:5px;
+}
+
+.online{
+color:green;
+}
+
+.offline{
+color:red;
+}
+
+</style>
+
 </head>
+
 <body>
 
-<h1>Water Control Dashboard</h1>
-<p>Dashboard sedang dibuat...</p>
+<h2>KONTROL AIR ESP32</h2>
+
+<div class="card">
+<div class="label">MODE</div>
+<div class="value" id="mode">---</div>
+</div>
+
+<div class="card">
+<div class="label">PUMP</div>
+<div class="value" id="pump">---</div>
+</div>
+
+<div class="card">
+<div class="label">LEVEL BAK</div>
+<div class="value" id="bak">---</div>
+</div>
+
+<div class="card">
+<div class="label">FLOW</div>
+<div class="value" id="flow">---</div>
+</div>
+
+<div class="card">
+<div class="label">HARI INI</div>
+<div class="value" id="today">---</div>
+</div>
+
+<div class="card">
+<div class="label">TOTAL AIR</div>
+<div class="value" id="lifetime">---</div>
+</div>
+
+<div class="card">
+<div class="label">ALARM</div>
+<div class="value" id="alarm">---</div>
+</div>
+
+<div class="card">
+<div class="label">ESP32</div>
+<div class="value" id="online">---</div>
+</div>
 
 </body>
 </html>
