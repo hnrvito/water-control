@@ -208,7 +208,24 @@ let el=document.getElementById("alarm");
 
 el.innerHTML=value;
 
-if(value!="NORMAL")
+if(topic=="water/alarm")
+{
+    let el=document.getElementById("alarm");
+
+    el.innerHTML=value;
+
+    if(
+        value=="NORMAL" ||
+        value=="SISTEM NORMAL"
+    )
+    {
+        el.className="value";
+    }
+    else
+    {
+        el.className="value status-alarm";
+    }
+}
 el.className="value status-alarm";
 else
 el.className="value";
