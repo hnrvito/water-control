@@ -8,7 +8,15 @@
 <title>Water Control</title>
 
 <style>
-
+button{
+flex:1;
+padding:15px;
+font-size:16px;
+font-weight:bold;
+border:none;
+border-radius:10px;
+cursor:pointer;
+}
 body{
 font-family:Arial;
 background:#f2f2f2;
@@ -89,7 +97,25 @@ font-weight:bold;
 <body>
 
 <h2>KONTROL AIR ESP32</h2>
+<div class="card">
 
+<div style="display:flex;gap:10px">
+
+<button onclick="sendCmd('AUTO')">
+AUTO
+</button>
+
+<button onclick="sendCmd('MANUAL')">
+MANUAL
+</button>
+
+<button onclick="sendCmd('STOP')">
+STOP
+</button>
+
+</div>
+
+</div>
 <div class="card">
 <div class="label">MODE</div>
 <div class="value" id="mode">---</div>
@@ -234,7 +260,17 @@ el.className="value status-offline";
 }
 
 });
+function sendCmd(cmd)
+{
+    client.publish(
+        "water/cmd",
+        cmd
+    );
 
+    console.log(
+        "SEND : " + cmd
+    );
+}
 </script>
 </body>
 </html>
