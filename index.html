@@ -46,7 +46,42 @@ color:green;
 .offline{
 color:red;
 }
+.status-auto{
+color:#28a745;
+}
 
+.status-manual{
+color:#007bff;
+}
+
+.status-idle{
+color:#6c757d;
+}
+
+.status-error{
+color:#dc3545;
+}
+
+.status-online{
+color:#28a745;
+}
+
+.status-offline{
+color:#dc3545;
+}
+
+.status-pump-on{
+color:#28a745;
+}
+
+.status-pump-off{
+color:#dc3545;
+}
+
+.status-alarm{
+color:#dc3545;
+font-weight:bold;
+}
 </style>
 
 </head>
@@ -125,10 +160,35 @@ client.on('message', function(topic,message){
 let value = message.toString();
 
 if(topic=="water/mode")
-document.getElementById("mode").innerHTML=value;
+{
+let el=document.getElementById("mode");
+
+el.innerHTML=value;
+
+if(value=="AUTO")
+el.className="value status-auto";
+
+else if(value=="MANUAL")
+el.className="value status-manual";
+
+else if(value=="IDLE")
+el.className="value status-idle";
+
+else
+el.className="value status-error";
+}
 
 if(topic=="water/pump")
-document.getElementById("pump").innerHTML=value;
+{
+let el=document.getElementById("pump");
+
+el.innerHTML=value;
+
+if(value=="ON")
+el.className="value status-pump-on";
+else
+el.className="value status-pump-off";
+}
 
 if(topic=="water/bak")
 document.getElementById("bak").innerHTML=value;
@@ -143,10 +203,28 @@ if(topic=="water/lifetime")
 document.getElementById("lifetime").innerHTML=value;
 
 if(topic=="water/alarm")
-document.getElementById("alarm").innerHTML=value;
+{
+let el=document.getElementById("alarm");
+
+el.innerHTML=value;
+
+if(value!="NORMAL")
+el.className="value status-alarm";
+else
+el.className="value";
+}
 
 if(topic=="water/online")
-document.getElementById("online").innerHTML=value;
+{
+let el=document.getElementById("online");
+
+el.innerHTML=value;
+
+if(value=="ONLINE")
+el.className="value status-online";
+else
+el.className="value status-offline";
+}
 
 });
 
