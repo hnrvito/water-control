@@ -1,290 +1,232 @@
 <!DOCTYPE html>
 <html>
-
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport"
+content="width=device-width,initial-scale=1">
 
-<title>Water Control</title>
+<title>Kontrol Air ESP32</title>
 
 <style>
-button{
-flex:1;
-padding:15px;
-font-size:16px;
-font-weight:bold;
-border:none;
-border-radius:10px;
-cursor:pointer;
-}
+
 body{
-font-family:Arial;
-background:#f2f2f2;
-margin:0;
-padding:10px;
+    margin:0;
+    padding:5px;
+    background:#f2f2f2;
+    font-family:Arial;
 }
 
 h2{
-text-align:center;
+    margin:5px;
+    font-size:24px;
 }
 
 .card{
-background:white;
-padding:15px;
-margin-bottom:10px;
-border-radius:12px;
-box-shadow:0 2px 5px rgba(0,0,0,.15);
+    padding:8px;
+    margin:5px;
+    border-radius:10px;
+    background:white;
 }
 
-.label{
-font-size:14px;
-color:#666;
+.grid3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:4px;
 }
 
-.value{
-font-size:24px;
-font-weight:bold;
-margin-top:5px;
+.btn{
+    width:100%;
+    height:80px;
+    border:none;
+    border-radius:8px;
+    font-size:18px;
 }
 
-.online{
-color:green;
+.btnAuto{
+    background:#FFD700;
+    color:black;
+    height:52px;
 }
 
-.offline{
-color:red;
-}
-.status-auto{
-color:#28a745;
-}
-
-.status-manual{
-color:#007bff;
+.btnManual{
+    background:#2196F3;
+    color:white;
+    height:52px;
 }
 
-.status-idle{
-color:#6c757d;
+.btnStop{
+    background:#F44336;
+    color:white;
+    height:52px;
 }
 
-.status-error{
-color:#dc3545;
+.btnReset{
+    background:#FF9800;
+    color:white;
+    height:52px;
 }
 
-.status-online{
-color:#28a745;
+.btnPumpOn{
+    background:#4CAF50;
+    color:white;
+    height:52px;
 }
 
-.status-offline{
-color:#dc3545;
+.btnPumpOff{
+    background:#9E9E9E;
+    color:white;
+    height:52px;
 }
 
-.status-pump-on{
-color:#28a745;
+.btnBypassOpen{
+    background:#4CAF50;
+    color:white;
 }
 
-.status-pump-off{
-color:#dc3545;
+.btnBypassClose{
+    background:#F44336;
+    color:white;
 }
 
-.status-alarm{
-color:#dc3545;
-font-weight:bold;
+.btnPDAM{
+    background:#0096FF;
+    color:white;
 }
+
+.btnBAK{
+    background:#795548;
+    color:white;
+}
+
+.btnToBak{
+    background:#00BCD4;
+    color:white;
+}
+
+.btnToTandon{
+    background:#673AB7;
+    color:white;
+}
+
+.blink{
+    animation:blink 1s infinite;
+}
+
+@keyframes blink{
+    50%{
+        opacity:0.2;
+    }
+}
+
 </style>
-
 </head>
 
 <body>
 
 <h2>KONTROL AIR ESP32</h2>
+
+<div id="alarmBox"
+style="
+margin:5px;
+padding:12px;
+border-radius:12px;
+text-align:center;
+font-weight:bold;
+color:white;
+background:#28a745;">
+
+SISTEM NORMAL
+
+</div>
+
+<div style="
+text-align:center;
+font-size:18px;
+font-weight:bold;">
+
+14/06/2026 09:15:22
+
+</div>
+
+<div style="
+background:#111;
+color:white;
+padding:8px;
+margin:5px;
+border-radius:20px;
+text-align:center;">
+
+<div>Jadwal Berikutnya</div>
+
+<div style="
+font-size:18px;
+font-weight:bold;
+margin-top:5px;">
+
+15/06/2026 21:30
+
+</div>
+
+</div>
 <div class="card">
 
-<div style="display:flex;gap:10px">
+<p>Mode : <b id="mode">IDLE</b></p>
 
-<button onclick="sendCmd('AUTO')">
-AUTO
-</button>
+<p>Pompa :
+<span style="color:red">
+OFF
+</span>
+</p>
 
-<button onclick="sendCmd('MANUAL')">
-MANUAL
-</button>
+<p>Level BAK :
+<span id="level">
+100
+</span>%
+</p>
 
-<button onclick="sendCmd('STOP')">
-STOP
-</button>
+<div style="
+width:100%;
+height:18px;
+background:#ddd;
+border-radius:10px;">
 
-</div>   
-<div style="display:flex;gap:10px;margin-top:10px">
-
-<button
-style="background:#28a745;color:white"
-onclick="sendCmd('PUMP_ON')">
-PUMP ON
-</button>
-
-<button
-style="background:#dc3545;color:white"
-onclick="sendCmd('PUMP_OFF')">
-PUMP OFF
-</button>
-
-</div>
-</div>
-<div class="card">
-<div class="label">MODE</div>
-<div class="value" id="mode">---</div>
+<div style="
+width:100%;
+height:18px;
+background:#0096FF;
+border-radius:10px;">
 </div>
 
-<div class="card">
-<div class="label">PUMP</div>
-<div class="value" id="pump">---</div>
 </div>
 
-<div class="card">
-<div class="label">LEVEL BAK</div>
-<div class="value" id="bak">---</div>
+<p>Flow : 0 L/min</p>
+
+<p>Hari Ini : 0 Liter</p>
+
+<p>Total Sistem : 0 Liter</p>
+
+<p>Bypass :
+<span style="color:green">
+OPEN
+</span>
+</p>
+
+<p>Sumber :
+<span style="color:green">
+BAK
+</span>
+</p>
+
+<p>Distribusi :
+<span style="color:green">
+TANDON
+</span>
+</p>
+
+<p>Alarm BAK :
+<span style="color:green">
+NORMAL
+</span>
+</p>
+
 </div>
-
-<div class="card">
-<div class="label">FLOW</div>
-<div class="value" id="flow">---</div>
-</div>
-
-<div class="card">
-<div class="label">HARI INI</div>
-<div class="value" id="today">---</div>
-</div>
-
-<div class="card">
-<div class="label">TOTAL AIR</div>
-<div class="value" id="lifetime">---</div>
-</div>
-
-<div class="card">
-<div class="label">ALARM</div>
-<div class="value" id="alarm">---</div>
-</div>
-
-<div class="card">
-<div class="label">ESP32</div>
-<div class="value" id="online">---</div>
-</div>
-<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-
-<script>
-
-const client = mqtt.connect(
-'wss://7670300b39ba4d55a0ec6d11ce773787.s1.eu.hivemq.cloud:8884/mqtt',
-{
-username:'hnrvito',
-password:'Jangandiingat1'
-});
-
-client.on('connect', function(){
-
-console.log("MQTT Connected");
-
-client.subscribe("water/mode");
-client.subscribe("water/pump");
-client.subscribe("water/bak");
-client.subscribe("water/flow");
-client.subscribe("water/today");
-client.subscribe("water/lifetime");
-client.subscribe("water/alarm");
-client.subscribe("water/online");
-
-});
-
-client.on('message', function(topic,message){
-
-let value = message.toString();
-
-if(topic=="water/mode")
-{
-let el=document.getElementById("mode");
-
-el.innerHTML=value;
-
-if(value=="AUTO")
-el.className="value status-auto";
-
-else if(value=="MANUAL")
-el.className="value status-manual";
-
-else if(value=="IDLE")
-el.className="value status-idle";
-
-else
-el.className="value status-error";
-}
-
-if(topic=="water/pump")
-{
-let el=document.getElementById("pump");
-
-el.innerHTML=value;
-
-if(value=="ON")
-el.className="value status-pump-on";
-else
-el.className="value status-pump-off";
-}
-
-if(topic=="water/bak")
-document.getElementById("bak").innerHTML=value;
-
-if(topic=="water/flow")
-document.getElementById("flow").innerHTML=value;
-
-if(topic=="water/today")
-document.getElementById("today").innerHTML=value;
-
-if(topic=="water/lifetime")
-document.getElementById("lifetime").innerHTML=value;
-
-if(topic=="water/alarm")
-{
-    let el=document.getElementById("alarm");
-
-    el.innerHTML=value;
-
-    if(
-        value=="NORMAL" ||
-        value=="SISTEM NORMAL"
-    )
-    {
-        el.className="value";
-    }
-    else
-    {
-        el.className="value status-alarm";
-    }
-}
-
-if(topic=="water/online")
-{
-let el=document.getElementById("online");
-
-el.innerHTML=value;
-
-if(value=="ONLINE")
-el.className="value status-online";
-else
-el.className="value status-offline";
-}
-
-});
-function sendCmd(cmd)
-{
-    client.publish(
-        "water/cmd",
-        cmd
-    );
-
-    console.log(
-        "SEND : " + cmd
-    );
-}
-</script>
-</body>
-</html>
