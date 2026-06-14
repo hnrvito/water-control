@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>KONTROL AIR ESP32</title>
 
 <style>
@@ -13,22 +12,15 @@ h2{margin:10px;font-size:24px;}
 .card p{margin:6px 0;}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin:2px;}
 .btn{width:100%;border:none;border-radius:4px;font-size:18px;cursor:pointer;}
-.btnAuto,.btnManual,.btnStop,.btnPumpOn,.btnPumpOff,.btnReset{height:50px;}
-.btnBypassOpen,.btnBypassClose,.btnPDAM,.btnBAK,.btnToBak,.btnToTandon{height:50px;}
-.btnAuto{background:#FFD700;color:black;}
-.btnManual{background:#2196F3;color:white;}
-.btnStop{background:#F44336;color:white;}
-.btnPumpOn{background:#4CAF50;color:white;}
-.btnPumpOff{background:#9E9E9E;color:white;}
-.btnReset{background:#FF9800;color:white;}
-.btnBypassOpen{background:#4CAF50;color:white;}
-.btnBypassClose{background:#F44336;color:white;}
-.btnPDAM{background:#2196F3;color:white;}
-.btnBAK{background:#795548;color:white;}
-.btnToBak{background:#00BCD4;color:white;}
-.btnToTandon{background:#673AB7;color:white;}
-.blink{animation:blink 1s infinite;}
-@keyframes blink{50%{opacity:0.2;}}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.btnAuto,.btnManual,.btnStop,.btnPumpOn,.btnPumpOff,.btnReset{height:40px;}
+.btnBypassOpen,.btnBypassClose,.btnPDAM,.btnBAK,.btnToBak,.btnToTandon{height:60px;}
+.btnAuto{background:#FFD700}.btnManual{background:#2196F3;color:#fff}.btnStop{background:#F44336;color:#fff}
+.btnPumpOn{background:#4CAF50;color:#fff}.btnPumpOff{background:#9E9E9E;color:#fff}.btnReset{background:#FF9800;color:#fff}
+.btnBypassOpen{background:#4CAF50;color:#fff}.btnBypassClose{background:#F44336;color:#fff}
+.btnPDAM{background:#2196F3;color:#fff}.btnBAK{background:#795548;color:#fff}
+.btnToBak{background:#00BCD4;color:#fff}.btnToTandon{background:#673AB7;color:#fff}
+.blink{animation:blink 1s infinite}@keyframes blink{50%{opacity:.2}}
 </style>
 </head>
 <body>
@@ -39,51 +31,28 @@ h2{margin:10px;font-size:24px;}
 SISTEM NORMAL
 </div>
 
-<div id="datetime" style="text-align:center;font-size:18px;font-weight:bold;margin-top:10px;">
-14/06/2026 09:15:22
-</div>
+<div id="datetime" style="text-align:center;font-size:18px;font-weight:bold;margin-top:10px;">--</div>
 
 <div style="background:#111;color:white;padding:6px;margin:5px;border-radius:25px;text-align:center;">
 <div style="font-size:16px;">Jadwal Berikutnya</div>
-<div id="nextSchedule" style="font-size:16px;font-weight:bold;margin-top:8px;">
-15/06/2026 21:30
-</div>
+<div id="nextSchedule" style="font-size:16px;font-weight:bold;margin-top:8px;">--</div>
 </div>
 
 <div class="card">
-
 <p>Mode : <b id="mode">IDLE</b></p>
-
-<p>Pompa :
-<span id="pump" style="color:red;">OFF</span>
-</p>
-
-<p>Level BAK : <span id="level">100</span> %</p>
-
+<p>Pompa : <span id="pump" style="color:red;">OFF</span></p>
+<p>Level BAK : <span id="level">0</span> %</p>
 <div style="width:100%;height:18px;background:#ddd;border-radius:10px;">
-<div id="levelBar" style="width:100%;height:18px;background:#2196F3;border-radius:10px;"></div>
+<div id="levelBar" style="width:0%;height:18px;background:#2196F3;border-radius:10px;"></div>
 </div>
-
 <p>Flow : <span id="flow">0</span> L/min</p>
 <p>Hari Ini : <span id="today">0</span> Liter</p>
 <p>Total Sistem : <span id="total">0</span> Liter</p>
-
-<p>Bypass :
-<span id="bypass" style="color:green;">OPEN</span>
-</p>
-
-<p>Sumber :
-<span id="source" style="color:green;">BAK</span>
-</p>
-
-<p>Distribusi :
-<span id="dist" style="color:green;">TANDON</span>
-</p>
-
-<p>Alarm BAK :
-<span id="alarmBak" style="color:green;">NORMAL</span>
-</p>
-
+<p>Bypass : <span id="bypass">OPEN</span></p>
+<p>Sumber : <span id="source">BAK</span></p>
+<p>Distribusi : <span id="dist">TANDON</span></p>
+<p>Alarm BAK : <span id="alarmBak">NORMAL</span></p>
+<p>MQTT : <span id="mqttStatus" style="color:red;">DISCONNECTED</span></p>
 </div>
 
 <div class="grid3">
@@ -91,19 +60,16 @@ SISTEM NORMAL
 <button class="btn btnManual" onclick="sendCmd('MANUAL')">MANUAL</button>
 <button class="btn btnStop" onclick="sendCmd('STOP')">STOP</button>
 </div>
-
 <div class="grid3">
 <button class="btn btnPumpOn" onclick="sendCmd('PUMP_ON')">PUMP ON</button>
 <button class="btn btnPumpOff" onclick="sendCmd('PUMP_OFF')">PUMP OFF</button>
 <button class="btn btnReset" onclick="sendCmd('RESET')">RESET</button>
 </div>
-
 <div class="grid3">
 <button class="btn btnBypassOpen" onclick="sendCmd('OPEN_BYPASS')">OPEN<br>BYPASS</button>
 <button class="btn btnPDAM" onclick="sendCmd('FROM_PDAM')">FROM<br>PDAM</button>
 <button class="btn btnToBak" onclick="sendCmd('TO_BAK')">TO<br>BAK</button>
 </div>
-
 <div class="grid3">
 <button class="btn btnBypassClose" onclick="sendCmd('CLOSE_BYPASS')">CLOSE<br>BYPASS</button>
 <button class="btn btnBAK" onclick="sendCmd('FROM_BAK')">FROM<br>BAK</button>
@@ -111,82 +77,83 @@ SISTEM NORMAL
 </div>
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-
 <script>
+const MQTT_HOST="7670300b39ba4d55a0ec6d11ce773787.s1.eu.hivemq.cloud";
+const MQTT_USER="hnrvito";
+const MQTT_PASS="Jangandiingat1";
 
-const MQTT_HOST = "7670300b39ba4d55a0ec6d11ce773787.s1.eu.hivemq.cloud";
-const MQTT_USER = "hnrvito";
-const MQTT_PASS = "Jangandiingat1";
+let bypassMoving=false,sourceMoving=false,distMoving=false;
 
-const client = mqtt.connect(
-'wss://' + MQTT_HOST + ':8884/mqtt',
-{
-username: MQTT_USER,
-password: MQTT_PASS
+const client=mqtt.connect('wss://'+MQTT_HOST+':8884/mqtt',{username:MQTT_USER,password:MQTT_PASS});
+
+client.on('connect',()=>{
+document.getElementById('mqttStatus').innerHTML='CONNECTED';
+document.getElementById('mqttStatus').style.color='green';
+['water/mode','water/pump','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/datetime','water/nextSchedule','water/bypassMoving','water/sourceMoving','water/distMoving'].forEach(t=>client.subscribe(t));
 });
 
-client.on('connect', ()=>{
-
-console.log("MQTT Connected");
-
-client.subscribe("water/mode");
-client.subscribe("water/pump");
-client.subscribe("water/bak");
-client.subscribe("water/flow");
-client.subscribe("water/today");
-client.subscribe("water/lifetime");
-client.subscribe("water/bypass");
-client.subscribe("water/source");
-client.subscribe("water/dist");
-client.subscribe("water/alarm");
-client.subscribe("water/datetime");
-client.subscribe("water/nextSchedule");
-
+client.on('close',()=>{
+document.getElementById('mqttStatus').innerHTML='DISCONNECTED';
+document.getElementById('mqttStatus').style.color='red';
 });
 
-client.on('message',(topic,msg)=>{
-
-let value = msg.toString();
-
-if(topic=="water/mode") document.getElementById("mode").innerHTML=value;
-if(topic=="water/pump") document.getElementById("pump").innerHTML=value;
-
-if(topic=="water/bak"){
-document.getElementById("level").innerHTML=value;
-document.getElementById("levelBar").style.width=parseFloat(value)+"%";
+function updateStatusColors(){
+let b=bypass,s=source,d=dist;
+b.classList.remove('blink');s.classList.remove('blink');d.classList.remove('blink');
+b.style.color=(b.innerHTML==='OPEN')?'green':'red';
+s.style.color=(s.innerHTML==='PDAM')?'#0096FF':'green';
+d.style.color=(d.innerHTML==='BAK')?'#0096FF':'green';
+if(bypassMoving)b.classList.add('blink');
+if(sourceMoving)s.classList.add('blink');
+if(distMoving)d.classList.add('blink');
 }
 
-if(topic=="water/flow") document.getElementById("flow").innerHTML=value;
-if(topic=="water/today") document.getElementById("today").innerHTML=value;
-if(topic=="water/lifetime") document.getElementById("total").innerHTML=value;
-if(topic=="water/bypass") document.getElementById("bypass").innerHTML=value;
-if(topic=="water/source") document.getElementById("source").innerHTML=value;
-if(topic=="water/dist") document.getElementById("dist").innerHTML=value;
-if(topic=="water/alarm") document.getElementById("alarmBak").innerHTML=value;
-if(topic=="water/datetime") document.getElementById("datetime").innerHTML=value;
-if(topic=="water/nextSchedule") document.getElementById("nextSchedule").innerHTML=value;
+function updateButtons(mode){
+const dis=(sel,v)=>document.querySelector(sel).disabled=v;
+if(mode==='AUTO'){
+dis('.btnAuto',true);dis('.btnManual',true);
+['.btnPumpOn','.btnPumpOff','.btnBypassOpen','.btnBypassClose','.btnPDAM','.btnBAK','.btnToBak','.btnToTandon'].forEach(x=>dis(x,true));
+dis('.btnStop',false);
+}else if(mode==='MANUAL'){
+dis('.btnAuto',true);dis('.btnManual',true);dis('.btnStop',false);
+['.btnPumpOn','.btnPumpOff','.btnBypassOpen','.btnBypassClose','.btnPDAM','.btnBAK','.btnToBak','.btnToTandon'].forEach(x=>dis(x,false));
+}else{
+dis('.btnAuto',false);dis('.btnManual',false);dis('.btnStop',true);
+['.btnPumpOn','.btnPumpOff','.btnBypassOpen','.btnBypassClose','.btnPDAM','.btnBAK','.btnToBak','.btnToTandon'].forEach(x=>dis(x,true));
+}
+}
 
+client.on('message',(topic,msg)=>{
+let value=msg.toString();
+if(topic==='water/mode'){mode.innerHTML=value;updateButtons(value);}
+if(topic==='water/pump'){pump.innerHTML=value;pump.style.color=value==='ON'?'green':'red';}
+if(topic==='water/bak'){level.innerHTML=value;levelBar.style.width=parseFloat(value)+'%';}
+if(topic==='water/flow')flow.innerHTML=value;
+if(topic==='water/today')today.innerHTML=value;
+if(topic==='water/lifetime')total.innerHTML=value;
+if(topic==='water/bypass'){bypass.innerHTML=value;updateStatusColors();}
+if(topic==='water/source'){source.innerHTML=value;updateStatusColors();}
+if(topic==='water/dist'){dist.innerHTML=value;updateStatusColors();}
+if(topic==='water/alarm'){
+alarmBak.innerHTML=value;
+if(value.includes('LOW')){alarmBak.style.color='red';alarmBox.style.background='#F44336';alarmBox.innerHTML='LOW LEVEL BAK';}
+else{alarmBak.style.color='green';alarmBox.style.background='#28a745';alarmBox.innerHTML='SISTEM NORMAL';}
+}
+if(topic==='water/datetime')datetime.innerHTML=value;
+if(topic==='water/nextSchedule')nextSchedule.innerHTML=value;
+if(topic==='water/bypassMoving'){bypassMoving=(value==='1'||value==='true');updateStatusColors();}
+if(topic==='water/sourceMoving'){sourceMoving=(value==='1'||value==='true');updateStatusColors();}
+if(topic==='water/distMoving'){distMoving=(value==='1'||value==='true');updateStatusColors();}
 });
 
 function sendCmd(cmd){
-
-if(cmd=="AUTO"){
-if(!confirm("Jalankan Mode AUTO ?")) return;
+if(cmd==='AUTO' && !confirm('Jalankan Mode AUTO ?')) return;
+if(cmd==='STOP' && !confirm('Hentikan Sistem ?')) return;
+if(cmd==='RESET' && !confirm('Restart ESP32 ?')) return;
+client.publish('water/cmd',cmd);
 }
-
-if(cmd=="STOP"){
-if(!confirm("Hentikan Sistem ?")) return;
-}
-
-if(cmd=="RESET"){
-if(!confirm("Restart ESP32 ?")) return;
-}
-
-client.publish("water/cmd",cmd);
-
-}
-
+updateButtons('IDLE');
+updateStatusColors();
 </script>
-
 </body>
 </html>
