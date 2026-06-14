@@ -157,7 +157,6 @@ console.log(
 );
 
 let value=msg.toString();
-let value=msg.toString();
 if(topic==='water/mode'){mode.innerHTML=value;updateButtons(value);}
 if(topic==='water/pump'){pump.innerHTML=value;pump.style.color=value==='ON'?'green':'red';}
 if(topic==='water/bak'){level.innerHTML=value;levelBar.style.width=parseFloat(value)+'%';}
