@@ -98,6 +98,16 @@ SISTEM NORMAL
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script>
+const PASSWORD = "apasandinya";
+
+const pass = prompt("Masukkan Password");
+
+if(pass !== PASSWORD){
+    document.body.innerHTML =
+        "<h1>ACCESS DENIED</h1>";
+
+    throw new Error("Unauthorized");
+}
 const MQTT_HOST="7670300b39ba4d55a0ec6d11ce773787.s1.eu.hivemq.cloud";
 const MQTT_USER="hnrvito";
 const MQTT_PASS="Jangandiingat1";
