@@ -2,10 +2,9 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta name="viewport"
-content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>Kontrol Air ESP32</title>
+<title>KONTROL AIR ESP32</title>
 
 <style>
 
@@ -13,11 +12,11 @@ body{
     margin:0;
     padding:5px;
     background:#f2f2f2;
-    font-family:Arial;
+    font-family:Arial,sans-serif;
 }
 
 h2{
-    margin:5px;
+    margin:10px;
     font-size:24px;
 }
 
@@ -37,50 +36,63 @@ h2{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
     gap:4px;
+    margin:4px;
 }
 
 .btn{
     width:100%;
-    height:80px;
     border:none;
-    border-radius:8px;
+    border-radius:4px;
     font-size:18px;
+    cursor:pointer;
+}
+
+.btnAuto,
+.btnManual,
+.btnStop,
+.btnPumpOn,
+.btnPumpOff,
+.btnReset{
+    height:52px;
+}
+
+.btnBypassOpen,
+.btnBypassClose,
+.btnPDAM,
+.btnBAK,
+.btnToBak,
+.btnToTandon{
+    height:76px;
 }
 
 .btnAuto{
     background:#FFD700;
     color:black;
-    height:52px;
 }
 
 .btnManual{
     background:#2196F3;
     color:white;
-    height:52px;
 }
 
 .btnStop{
     background:#F44336;
     color:white;
-    height:52px;
-}
-
-.btnReset{
-    background:#FF9800;
-    color:white;
-    height:52px;
 }
 
 .btnPumpOn{
     background:#4CAF50;
     color:white;
-    height:52px;
 }
 
 .btnPumpOff{
     background:#9E9E9E;
     color:white;
-    height:52px;
+}
+
+.btnReset{
+    background:#FF9800;
+    color:white;
 }
 
 .btnBypassOpen{
@@ -94,7 +106,7 @@ h2{
 }
 
 .btnPDAM{
-    background:#0096FF;
+    background:#2196F3;
     color:white;
 }
 
@@ -133,9 +145,10 @@ h2{
 <div id="alarmBox"
 style="
 margin:5px;
-padding:12px;
-border-radius:12px;
+padding:20px;
+border-radius:20px;
 text-align:center;
+font-size:20px;
 font-weight:bold;
 color:white;
 background:#28a745;">
@@ -147,7 +160,8 @@ SISTEM NORMAL
 <div style="
 text-align:center;
 font-size:18px;
-font-weight:bold;">
+font-weight:bold;
+margin-top:10px;">
 
 14/06/2026 09:15:22
 
@@ -156,38 +170,37 @@ font-weight:bold;">
 <div style="
 background:#111;
 color:white;
-padding:8px;
+padding:12px;
 margin:5px;
-border-radius:20px;
+border-radius:25px;
 text-align:center;">
 
-<div>Jadwal Berikutnya</div>
+<div style="font-size:18px;">
+Jadwal Berikutnya
+</div>
 
 <div style="
-font-size:18px;
+font-size:22px;
 font-weight:bold;
-margin-top:5px;">
+margin-top:8px;">
 
 15/06/2026 21:30
 
 </div>
 
 </div>
+
 <div class="card">
 
-<p>Mode : <b id="mode">IDLE</b></p>
+<p>Mode : <b>IDLE</b></p>
 
 <p>Pompa :
-<span style="color:red">
+<span style="color:red;">
 OFF
 </span>
 </p>
 
-<p>Level BAK :
-<span id="level">
-100
-</span>%
-</p>
+<p>Level BAK : 100 %</p>
 
 <div style="
 width:100%;
@@ -198,7 +211,7 @@ border-radius:10px;">
 <div style="
 width:100%;
 height:18px;
-background:#0096FF;
+background:#2196F3;
 border-radius:10px;">
 </div>
 
@@ -211,27 +224,131 @@ border-radius:10px;">
 <p>Total Sistem : 0 Liter</p>
 
 <p>Bypass :
-<span style="color:green">
+<span style="color:green;">
 OPEN
 </span>
 </p>
 
 <p>Sumber :
-<span style="color:green">
+<span style="color:green;">
 BAK
 </span>
 </p>
 
 <p>Distribusi :
-<span style="color:green">
+<span style="color:green;">
 TANDON
 </span>
 </p>
 
 <p>Alarm BAK :
-<span style="color:green">
+<span style="color:green;">
 NORMAL
 </span>
 </p>
 
 </div>
+
+<div class="grid3">
+
+<button class="btn btnAuto"
+onclick="sendCmd('AUTO')">
+AUTO
+</button>
+
+<button class="btn btnManual"
+onclick="sendCmd('MANUAL')">
+MANUAL
+</button>
+
+<button class="btn btnStop"
+onclick="sendCmd('STOP')">
+STOP
+</button>
+
+</div>
+
+<div class="grid3">
+
+<button class="btn btnPumpOn"
+onclick="sendCmd('PUMP_ON')">
+PUMP ON
+</button>
+
+<button class="btn btnPumpOff"
+onclick="sendCmd('PUMP_OFF')">
+PUMP OFF
+</button>
+
+<button class="btn btnReset"
+onclick="sendCmd('RESET')">
+RESET
+</button>
+
+</div>
+
+<div class="grid3">
+
+<button class="btn btnBypassOpen"
+onclick="sendCmd('OPEN_BYPASS')">
+OPEN<br>BYPASS
+</button>
+
+<button class="btn btnPDAM"
+onclick="sendCmd('FROM_PDAM')">
+FROM<br>PDAM
+</button>
+
+<button class="btn btnToBak"
+onclick="sendCmd('TO_BAK')">
+TO<br>BAK
+</button>
+
+</div>
+
+<div class="grid3">
+
+<button class="btn btnBypassClose"
+onclick="sendCmd('CLOSE_BYPASS')">
+CLOSE<br>BYPASS
+</button>
+
+<button class="btn btnBAK"
+onclick="sendCmd('FROM_BAK')">
+FROM<br>BAK
+</button>
+
+<button class="btn btnToTandon"
+onclick="sendCmd('TO_TANDON')">
+TO<br>TANDON
+</button>
+
+</div>
+
+<script>
+
+function sendCmd(cmd){
+
+    if(cmd=="AUTO"){
+        if(!confirm("Jalankan Mode AUTO ?"))
+            return;
+    }
+
+    if(cmd=="STOP"){
+        if(!confirm("Hentikan Sistem ?"))
+            return;
+    }
+
+    if(cmd=="RESET"){
+        if(!confirm("Restart ESP32 ?"))
+            return;
+    }
+
+    console.log(cmd);
+
+}
+
+</script>
+
+</body>
+</html>
