@@ -98,14 +98,38 @@ document.getElementById('mqttStatus').style.color='red';
 });
 
 function updateStatusColors(){
-let b=bypass,s=source,d=dist;
-b.classList.remove('blink');s.classList.remove('blink');d.classList.remove('blink');
-b.style.color=(b.innerHTML==='OPEN')?'green':'red';
-s.style.color=(s.innerHTML==='PDAM')?'#0096FF':'green';
-d.style.color=(d.innerHTML==='BAK')?'#0096FF':'green';
-if(bypassMoving)b.classList.add('blink');
-if(sourceMoving)s.classList.add('blink');
-if(distMoving)d.classList.add('blink');
+
+let b=document.getElementById('bypass');
+let s=document.getElementById('source');
+let d=document.getElementById('dist');
+
+b.classList.remove('blink');
+s.classList.remove('blink');
+d.classList.remove('blink');
+
+if(b.innerHTML==='OPEN')
+    b.style.color='green';
+else if(b.innerHTML==='CLOSE')
+    b.style.color='red';
+
+if(s.innerHTML==='PDAM')
+    s.style.color='#0096FF';
+else if(s.innerHTML==='BAK')
+    s.style.color='green';
+
+if(d.innerHTML==='BAK')
+    d.style.color='#0096FF';
+else if(d.innerHTML==='TANDON')
+    d.style.color='green';
+
+if(bypassMoving)
+    b.classList.add('blink');
+
+if(sourceMoving)
+    s.classList.add('blink');
+
+if(distMoving)
+    d.classList.add('blink');
 }
 
 function updateButtons(mode){
