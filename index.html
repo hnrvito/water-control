@@ -11,7 +11,27 @@ h2{margin:10px;font-size:24px;}
 .card{padding:8px;margin:5px;border-radius:10px;background:white;line-height:1.2;}
 .card p{margin:6px 0;}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin:2px;}
-.btn{width:100%;border:none;border-radius:4px;font-size:18px;cursor:pointer;}
+.btn{
+    width:100%;
+    border:none;
+    border-radius:4px;
+    font-size:18px;
+    cursor:pointer;
+    transition:all .15s ease;
+}
+    .btn:active{
+    transform:scale(0.92);
+    opacity:0.7;
+}
+    .btnFlash{
+    animation:btnFlash .3s;
+}
+
+@keyframes btnFlash{
+    0%{transform:scale(1);}
+    50%{transform:scale(.9);}
+    100%{transform:scale(1);}
+}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
 .btnAuto,.btnManual,.btnStop,.btnPumpOn,.btnPumpOff,.btnReset{height:40px;}
 .btnBypassOpen,.btnBypassClose,.btnPDAM,.btnBAK,.btnToBak,.btnToTandon{height:60px;}
@@ -186,6 +206,11 @@ if(topic==='water/distMoving'){
 });
 
 function sendCmd(cmd){
+    event.target.classList.add('btnFlash');
+
+setTimeout(()=>{
+    event.target.classList.remove('btnFlash');
+},300);
 if(cmd==='AUTO' && !confirm('Jalankan Mode AUTO ?')) return;
 if(cmd==='STOP' && !confirm('Hentikan Sistem ?')) return;
 if(cmd==='RESET' && !confirm('Restart ESP32 ?')) return;
