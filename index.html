@@ -149,13 +149,6 @@ dis('.btnAuto',false);dis('.btnManual',false);dis('.btnStop',true);
 
 client.on('message',(topic,msg)=>{
 
-console.log(
-    "TOPIC:",
-    topic,
-    "VALUE:",
-    msg.toString()
-);
-
 let value=msg.toString();
 if(topic==='water/mode'){mode.innerHTML=value;updateButtons(value);}
 if(topic==='water/pump'){pump.innerHTML=value;pump.style.color=value==='ON'?'green':'red';}
@@ -176,21 +169,18 @@ if(topic==='water/nextSchedule')nextSchedule.innerHTML=value;
 if(topic==='water/bypassMoving'){
     value=value.trim().toLowerCase();
     bypassMoving=(value==='1'||value==='true');
-    console.log('bypassMoving=',value,bypassMoving);
     updateStatusColors();
 }
 
 if(topic==='water/sourceMoving'){
     value=value.trim().toLowerCase();
     sourceMoving=(value==='1'||value==='true');
-    console.log('sourceMoving=',value,sourceMoving);
     updateStatusColors();
 }
 
 if(topic==='water/distMoving'){
     value=value.trim().toLowerCase();
     distMoving=(value==='1'||value==='true');
-    console.log('distMoving=',value,distMoving);
     updateStatusColors();
 }
 });
