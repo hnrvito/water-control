@@ -165,9 +165,26 @@ else{alarmBak.style.color='green';alarmBox.style.background='#28a745';alarmBox.i
 }
 if(topic==='water/datetime')datetime.innerHTML=value;
 if(topic==='water/nextSchedule')nextSchedule.innerHTML=value;
-if(topic==='water/bypassMoving'){bypassMoving=(value==='1'||value==='true');updateStatusColors();}
-if(topic==='water/sourceMoving'){sourceMoving=(value==='1'||value==='true');updateStatusColors();}
-if(topic==='water/distMoving'){distMoving=(value==='1'||value==='true');updateStatusColors();}
+if(topic==='water/bypassMoving'){
+    value=value.trim().toLowerCase();
+    bypassMoving=(value==='1'||value==='true');
+    console.log('bypassMoving=',value,bypassMoving);
+    updateStatusColors();
+}
+
+if(topic==='water/sourceMoving'){
+    value=value.trim().toLowerCase();
+    sourceMoving=(value==='1'||value==='true');
+    console.log('sourceMoving=',value,sourceMoving);
+    updateStatusColors();
+}
+
+if(topic==='water/distMoving'){
+    value=value.trim().toLowerCase();
+    distMoving=(value==='1'||value==='true');
+    console.log('distMoving=',value,distMoving);
+    updateStatusColors();
+}
 });
 
 function sendCmd(cmd){
