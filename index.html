@@ -40,6 +40,7 @@ h2{margin:10px;font-size:24px;}
 .btnBypassOpen{background:#4CAF50;color:#fff}.btnBypassClose{background:#F44336;color:#fff}
 .btnPDAM{background:#2196F3;color:#fff}.btnBAK{background:#795548;color:#fff}
 .btnToBak{background:#00BCD4;color:#fff}.btnToTandon{background:#673AB7;color:#fff}
+.btnOTA{background:#00BCD4;color:#fff;height:45px;font-weight:bold;margin-top:4px;}
 .blink{animation:blink 1s infinite}@keyframes blink{50%{opacity:.2}}
 </style>
 </head>
@@ -96,6 +97,14 @@ SISTEM NORMAL
 <button class="btn btnToTandon" onclick="sendCmd('TO_TANDON')">TO<br>TANDON</button>
 </div>
 
+<!-- KARTU OTA UPDATE FIRMWARE VIA INTERNET -->
+<div class="card" style="margin-top:10px; border: 2px dashed #00BCD4;">
+<p style="font-weight:bold; color:#00BCD4; margin:4px 0;">🔄 OTA Update Firmware dari Internet</p>
+<p style="font-size:12px; color:#555; margin:4px 0;">Masukkan URL direct link file <code>.bin</code> (misal GitHub / Hosting):</p>
+<input type="text" id="otaUrl" placeholder="https://.../firmware.bin" style="width:100%; box-sizing:border-box; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; margin:6px 0;">
+<button class="btn btnOTA" onclick="sendOTA()">🚀 UPLOAD FIRMWARE VIA MQTT</button>
+</div>
+
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script>
 const PASSWORD = "apasandinya";
@@ -119,7 +128,7 @@ const client=mqtt.connect('wss://'+MQTT_HOST+':8884/mqtt',{username:MQTT_USER,pa
 client.on('connect',()=>{
 document.getElementById('mqttStatus').innerHTML='CONNECTED';
 document.getElementById('mqttStatus').style.color='green';
-['water/mode','water/pump','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/datetime','water/nextSchedule','water/bypassMoving','water/sourceMoving','water/distMoving'].forEach(t=>client.subscribe(t));
+['water/mode','water/pump','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/status','water/datetime','water/nextSchedule','water/bypassMoving','water/sourceMoving','water/distMoving'].forEach(t=>client.subscribe(t));
 });
 
 client.on('close',()=>{
@@ -189,9 +198,14 @@ if(topic==='water/lifetime')total.innerHTML=value;
 if(topic==='water/bypass'){bypass.innerHTML=value;updateStatusColors();}
 if(topic==='water/source'){source.innerHTML=value;updateStatusColors();}
 if(topic==='water/dist'){dist.innerHTML=value;updateStatusColors();}
-if(topic==='water/alarm'){
-alarmBak.innerHTML=value;
+if(topic==='water/alarm' || topic==='water/status'){
+if(topic==='water/alarm') alarmBak.innerHTML=value;
 if(value.includes('LOW')){alarmBak.style.color='red';alarmBox.style.background='#F44336';alarmBox.innerHTML='LOW LEVEL BAK';}
+else if(value.includes('OTA') || value.includes('FAIL') || value.includes('STARTING') || value.includes('PROGRESS')){
+    alarmBak.style.color=value.includes('FAIL')?'red':'#FFD700';
+    alarmBox.style.background=value.includes('FAIL')?'#F44336':'#00BCD4';
+    alarmBox.innerHTML=value;
+}
 else{alarmBak.style.color='green';alarmBox.style.background='#28a745';alarmBox.innerHTML='SISTEM NORMAL';}
 }
 if(topic==='water/datetime')datetime.innerHTML=value;
@@ -226,6 +240,32 @@ if(cmd==='STOP' && !confirm('Hentikan Sistem ?')) return;
 if(cmd==='RESET' && !confirm('Restart ESP32 ?')) return;
 client.publish('water/cmd',cmd);
 }
+
+function sendOTA(){
+    let urlInput = document.getElementById('otaUrl');
+    let binUrl = urlInput.value.trim();
+    
+    if(!binUrl){
+        alert("⚠️ Harap masukkan URL file .bin terlebih dahulu!");
+        return;
+    }
+    if(!binUrl.startsWith("http://") && !binUrl.startsWith("https://")){
+        alert("⚠️ URL harus diawali dengan http:// atau https://");
+        return;
+    }
+    if(!confirm("⚠️ Apakah Anda yakin ingin mengupdate firmware dari URL berikut?\n\n" + binUrl + "\n\nESP32 akan mendownload dan otomatis me-restart jika berhasil.")){
+        return;
+    }
+    
+    if(client.connected){
+        client.publish('water/ota', binUrl);
+        alert("📡 Perintah OTA berhasil dikirim ke ESP32!\n\nSilakan pantau status progres pada kotak indikator di atas.");
+        urlInput.value = "";
+    }else{
+        alert("❌ Gagal: MQTT sedang Disconnected!");
+    }
+}
+
 updateButtons('IDLE');
 updateStatusColors();
 </script>
