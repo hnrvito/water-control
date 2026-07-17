@@ -63,7 +63,7 @@ SISTEM NORMAL
 
 <div class="card">
 <p>Mode : <b id="mode">IDLE</b></p>
-<p>Pompa : <span id="pump" style="color:red;">OFF</span></p>
+<p>Pompa : <span id="pump" style="color:red;">OFF</span> | <span id="pumpDuration">00:00:00</span></p>
 <p>Level BAK : <span id="level">0</span> %</p>
 <div style="width:100%;height:18px;background:#ddd;border-radius:10px;">
 <div id="levelBar" style="width:0%;height:18px;background:#2196F3;border-radius:10px;"></div>
@@ -130,7 +130,7 @@ const client=mqtt.connect('wss://'+MQTT_HOST+':8884/mqtt',{username:MQTT_USER,pa
 client.on('connect',()=>{
 document.getElementById('mqttStatus').innerHTML='CONNECTED';
 document.getElementById('mqttStatus').style.color='green';
-['water/mode','water/pump','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/status','water/datetime','water/nextSchedule','water/overrideActive','water/overrideTime','water/bypassMoving','water/sourceMoving','water/distMoving'].forEach(t=>client.subscribe(t));
+['water/mode','water/pump','water/pumpDuration','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/status','water/datetime','water/nextSchedule','water/overrideActive','water/overrideTime','water/bypassMoving','water/sourceMoving','water/distMoving'].forEach(t=>client.subscribe(t));
 });
 
 client.on('close',()=>{
@@ -193,6 +193,10 @@ client.on('message',(topic,msg)=>{
 let value=msg.toString();
 if(topic==='water/mode'){mode.innerHTML=value;updateButtons(value);}
 if(topic==='water/pump'){pump.innerHTML=value;pump.style.color=value==='ON'?'green':'red';}
+if(topic==='water/pumpDuration'){
+    let sec=parseInt(value)||0, h=Math.floor(sec/3600), mn=Math.floor((sec%3600)/60), sc=sec%60;
+    document.getElementById('pumpDuration').innerHTML=(h<10?'0':'')+h+':'+(mn<10?'0':'')+mn+':'+(sc<10?'0':'')+sc;
+}
 if(topic==='water/bak'){level.innerHTML=value;levelBar.style.width=parseFloat(value)+'%';}
 if(topic==='water/flow')flow.innerHTML=value;
 if(topic==='water/today')today.innerHTML=value;
