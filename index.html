@@ -52,11 +52,13 @@ h2{margin:10px;font-size:24px;}
 SISTEM NORMAL
 </div>
 
-<div id="datetime" style="text-align:center;font-size:18px;font-weight:bold;margin-top:10px;">--</div>
+<div id="datetime" style="text-align:center;font-size:18px;font-weight:bold;margin-top:10px;">--:--:--</div>
 
-<div style="background:#111;color:white;padding:6px;margin:5px;border-radius:25px;text-align:center;">
-<div style="font-size:16px;">Jadwal Berikutnya</div>
-<div id="nextSchedule" style="font-size:16px;font-weight:bold;margin-top:8px;">--</div>
+<div style="background:#111;color:#fff;font-family:monospace;margin:5px;padding:10px 12px;border:1px solid #fff;border-radius:4px;font-size:14px;line-height:1.9;">
+  <div>Jadwal berikutnya : <b id="nextSchedule">--/--/---- --:--</b></div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:18px;">AUTO : [
+  <input type="text" id="schTime" value="" placeholder="hh:mm" maxlength="5" style="width:60px;background:#111;color:#FFD700;border:none;text-align:center;font-family:monospace;font-size:18px;font-weight:bold;padding:0;">
+  ]<button onclick="sendSch()" style="background:none;border:none;color:#4CAF50;font-size:20px;font-weight:bold;cursor:pointer;padding:0 2px;">[&#10003;]</button></div>
 </div>
 
 <div class="card">
@@ -99,10 +101,10 @@ SISTEM NORMAL
 
 <!-- KARTU OTA UPDATE FIRMWARE VIA INTERNET -->
 <div class="card" style="margin-top:10px; border: 2px dashed #00BCD4;">
-<p style="font-weight:bold; color:#00BCD4; margin:4px 0;">🔄 OTA Update Firmware dari Internet</p>
+<p style="font-weight:bold; color:#00BCD4; margin:4px 0;">?? OTA Update Firmware dari Internet</p>
 <p style="font-size:12px; color:#555; margin:4px 0;">Masukkan URL direct link file <code>.bin</code> (misal GitHub / Hosting):</p>
 <input type="text" id="otaUrl" placeholder="https://.../firmware.bin" style="width:100%; box-sizing:border-box; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; margin:6px 0;">
-<button class="btn btnOTA" onclick="sendOTA()">🚀 UPLOAD FIRMWARE VIA MQTT</button>
+<button class="btn btnOTA" onclick="sendOTA()">?? UPLOAD FIRMWARE VIA MQTT</button>
 </div>
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
@@ -128,7 +130,7 @@ const client=mqtt.connect('wss://'+MQTT_HOST+':8884/mqtt',{username:MQTT_USER,pa
 client.on('connect',()=>{
 document.getElementById('mqttStatus').innerHTML='CONNECTED';
 document.getElementById('mqttStatus').style.color='green';
-['water/mode','water/pump','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/status','water/datetime','water/nextSchedule','water/bypassMoving','water/sourceMoving','water/distMoving'].forEach(t=>client.subscribe(t));
+['water/mode','water/pump','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/status','water/datetime','water/nextSchedule','water/overrideActive','water/overrideTime','water/bypassMoving','water/sourceMoving','water/distMoving'].forEach(t=>client.subscribe(t));
 });
 
 client.on('close',()=>{
@@ -210,6 +212,14 @@ else{alarmBak.style.color='green';alarmBox.style.background='#28a745';alarmBox.i
 }
 if(topic==='water/datetime')datetime.innerHTML=value;
 if(topic==='water/nextSchedule')nextSchedule.innerHTML=value;
+if(topic==='water/overrideTime'){
+    let si=document.getElementById('schTime');
+    if(document.activeElement!==si) si.value=value;
+}
+if(topic==='water/overrideActive'){
+    let si=document.getElementById('schTime');
+    si.style.color=(value==='true'||value==='1')?'#4CAF50':'#FFD700';
+}
 if(topic==='water/bypassMoving'){
     value=value.trim().toLowerCase();
     bypassMoving=(value==='1'||value==='true');
@@ -241,28 +251,43 @@ if(cmd==='RESET' && !confirm('Restart ESP32 ?')) return;
 client.publish('water/cmd',cmd);
 }
 
+function sendSch(){
+    let v = document.getElementById('schTime').value.trim();
+    let parts = v.split(':');
+    if(parts.length !== 2){ alert('Format jam harus hh:mm'); return; }
+    let h = parseInt(parts[0]), m = parseInt(parts[1]);
+    if(isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59){ alert('Jam/menit tidak valid'); return; }
+    if(!confirm('Ubah jam AUTO ke ' + v + ' untuk hari ini saja (via MQTT) ?')) return;
+    if(client.connected){
+        client.publish('water/sch', v);
+        alert('Perintah perubahan jadwal (' + v + ') berhasil dikirim ke ESP32!');
+    } else {
+        alert('Gagal: MQTT sedang Disconnected!');
+    }
+}
+
 function sendOTA(){
     let urlInput = document.getElementById('otaUrl');
     let binUrl = urlInput.value.trim();
     
     if(!binUrl){
-        alert("⚠️ Harap masukkan URL file .bin terlebih dahulu!");
+        alert("?? Harap masukkan URL file .bin terlebih dahulu!");
         return;
     }
     if(!binUrl.startsWith("http://") && !binUrl.startsWith("https://")){
-        alert("⚠️ URL harus diawali dengan http:// atau https://");
+        alert("?? URL harus diawali dengan http:// atau https://");
         return;
     }
-    if(!confirm("⚠️ Apakah Anda yakin ingin mengupdate firmware dari URL berikut?\n\n" + binUrl + "\n\nESP32 akan mendownload dan otomatis me-restart jika berhasil.")){
+    if(!confirm("?? Apakah Anda yakin ingin mengupdate firmware dari URL berikut?\n\n" + binUrl + "\n\nESP32 akan mendownload dan otomatis me-restart jika berhasil.")){
         return;
     }
     
     if(client.connected){
         client.publish('water/ota', binUrl);
-        alert("📡 Perintah OTA berhasil dikirim ke ESP32!\n\nSilakan pantau status progres pada kotak indikator di atas.");
+        alert("?? Perintah OTA berhasil dikirim ke ESP32!\n\nSilakan pantau status progres pada kotak indikator di atas.");
         urlInput.value = "";
     }else{
-        alert("❌ Gagal: MQTT sedang Disconnected!");
+        alert("? Gagal: MQTT sedang Disconnected!");
     }
 }
 
