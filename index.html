@@ -76,6 +76,7 @@ SISTEM NORMAL
 <p>Distribusi : <span id="dist">TANDON</span></p>
 <p>Alarm BAK : <span id="alarmBak">NORMAL</span></p>
 <p>MQTT : <span id="mqttStatus" style="color:red;">DISCONNECTED</span></p>
+<p>ESP32 : <span id="espStatus" style="color:red;font-weight:bold;">OFFLINE</span></p>
 </div>
 
 <div class="grid3">
@@ -101,42 +102,76 @@ SISTEM NORMAL
 
 <!-- KARTU OTA UPDATE FIRMWARE VIA INTERNET -->
 <div class="card" style="margin-top:10px; border: 2px dashed #00BCD4;">
-<p style="font-weight:bold; color:#00BCD4; margin:4px 0;">?? OTA Update Firmware dari Internet</p>
+<p style="font-weight:bold; color:#00BCD4; margin:4px 0;">🔧 OTA Update Firmware dari Internet</p>
 <p style="font-size:12px; color:#555; margin:4px 0;">Masukkan URL direct link file <code>.bin</code> (misal GitHub / Hosting):</p>
 <input type="text" id="otaUrl" placeholder="https://.../firmware.bin" style="width:100%; box-sizing:border-box; padding:10px; border:1px solid #ccc; border-radius:6px; font-size:14px; margin:6px 0;">
-<button class="btn btnOTA" onclick="sendOTA()">?? UPLOAD FIRMWARE VIA MQTT</button>
+<button class="btn btnOTA" onclick="sendOTA()">📡 UPLOAD FIRMWARE VIA MQTT</button>
 </div>
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script>
-const PASSWORD = "apasandinya";
-
-const pass = prompt("Masukkan Password");
-
-if(pass !== PASSWORD){
-    document.body.innerHTML =
-        "<h1>ACCESS DENIED</h1>";
-
-    throw new Error("Unauthorized");
-}
 const MQTT_HOST="7670300b39ba4d55a0ec6d11ce773787.s1.eu.hivemq.cloud";
 const MQTT_USER="hnrvito";
 const MQTT_PASS="Jangandiingat1";
 
 let bypassMoving=false,sourceMoving=false,distMoving=false;
 
+// =====================================================
+// HEARTBEAT VARIABLES
+// =====================================================
+let lastHeartbeatEpoch = 0;
+let lastHeartbeatRecvTime = 0;
+let espOnline = false;
+
 const client=mqtt.connect('wss://'+MQTT_HOST+':8884/mqtt',{username:MQTT_USER,password:MQTT_PASS});
 
 client.on('connect',()=>{
 document.getElementById('mqttStatus').innerHTML='CONNECTED';
 document.getElementById('mqttStatus').style.color='green';
-['water/mode','water/pump','water/pumpDuration','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/status','water/datetime','water/nextSchedule','water/overrideActive','water/overrideTime','water/bypassMoving','water/sourceMoving','water/distMoving'].forEach(t=>client.subscribe(t));
+['water/mode','water/pump','water/pumpDuration','water/bak','water/flow','water/today','water/lifetime','water/bypass','water/source','water/dist','water/alarm','water/status','water/datetime','water/nextSchedule','water/overrideActive','water/overrideTime','water/bypassMoving','water/sourceMoving','water/distMoving','water/heartbeat'].forEach(t=>client.subscribe(t));
 });
 
 client.on('close',()=>{
 document.getElementById('mqttStatus').innerHTML='DISCONNECTED';
 document.getElementById('mqttStatus').style.color='red';
 });
+
+// =====================================================
+// CHECK HEARTBEAT EVERY 3 SECONDS
+// =====================================================
+setInterval(()=>{
+  let espEl = document.getElementById('espStatus');
+  let alarmBox = document.getElementById('alarmBox');
+
+  if(lastHeartbeatEpoch === 0){
+    espOnline = false;
+    espEl.innerHTML = 'MENUNGGU DATA...';
+    espEl.style.color = 'gray';
+    return;
+  }
+
+  let nowEpoch = Math.floor(Date.now() / 1000);
+  let espAge = Math.abs(nowEpoch - lastHeartbeatEpoch);
+  let recvAge = (Date.now() - lastHeartbeatRecvTime) / 1000;
+
+  // Anggap offline jika selisih waktu > 10 detik atau tidak terima data > 10 detik
+  if(espAge > 10 || recvAge > 10){
+    if(espOnline !== false){
+      espOnline = false;
+      espEl.innerHTML = 'OFFLINE';
+      espEl.style.color = 'red';
+      alarmBox.style.background = '#6c757d';
+      alarmBox.innerHTML = '⚫ ESP32 OFFLINE / DISCONNECTED';
+    }
+  } else {
+    if(espOnline !== true){
+      espOnline = true;
+      espEl.innerHTML = 'ONLINE';
+      espEl.style.color = 'green';
+    }
+  }
+}, 3000);
+
 
 function updateStatusColors(){
 
@@ -191,6 +226,14 @@ dis('.btnAuto',false);dis('.btnManual',false);dis('.btnStop',true);
 client.on('message',(topic,msg)=>{
 
 let value=msg.toString();
+
+// Tangkap Heartbeat
+if(topic==='water/heartbeat'){
+    lastHeartbeatEpoch = parseInt(value) || 0;
+    lastHeartbeatRecvTime = Date.now();
+    return;
+}
+
 if(topic==='water/mode'){mode.innerHTML=value;updateButtons(value);}
 if(topic==='water/pump'){pump.innerHTML=value;pump.style.color=value==='ON'?'green':'red';}
 if(topic==='water/pumpDuration'){
@@ -204,16 +247,24 @@ if(topic==='water/lifetime')total.innerHTML=value;
 if(topic==='water/bypass'){bypass.innerHTML=value;updateStatusColors();}
 if(topic==='water/source'){source.innerHTML=value;updateStatusColors();}
 if(topic==='water/dist'){dist.innerHTML=value;updateStatusColors();}
+
 if(topic==='water/alarm' || topic==='water/status'){
-if(topic==='water/alarm') alarmBak.innerHTML=value;
-if(value.includes('LOW')){alarmBak.style.color='red';alarmBox.style.background='#F44336';alarmBox.innerHTML='LOW LEVEL BAK';}
-else if(value.includes('OTA') || value.includes('FAIL') || value.includes('STARTING') || value.includes('PROGRESS')){
-    alarmBak.style.color=value.includes('FAIL')?'red':'#FFD700';
-    alarmBox.style.background=value.includes('FAIL')?'#F44336':'#00BCD4';
-    alarmBox.innerHTML=value;
+  // Update alarm box HANYA jika ESP32 terdeteksi ONLINE
+  if(espOnline){
+    if(topic==='water/alarm') alarmBak.innerHTML=value;
+    if(value.includes('LOW')){alarmBak.style.color='red';alarmBox.style.background='#F44336';alarmBox.innerHTML='LOW LEVEL BAK';}
+    else if(value.includes('OTA') || value.includes('FAIL') || value.includes('STARTING') || value.includes('PROGRESS')){
+        alarmBak.style.color=value.includes('FAIL')?'red':'#FFD700';
+        alarmBox.style.background=value.includes('FAIL')?'#F44336':'#00BCD4';
+        alarmBox.innerHTML=value;
+    }
+    else{alarmBak.style.color='green';alarmBox.style.background='#28a745';alarmBox.innerHTML='SISTEM NORMAL';}
+  } else {
+    // Kalau offline, cuma catat text-nya saja di id alarmBak
+    if(topic==='water/alarm') alarmBak.innerHTML=value;
+  }
 }
-else{alarmBak.style.color='green';alarmBox.style.background='#28a745';alarmBox.innerHTML='SISTEM NORMAL';}
-}
+
 if(topic==='water/datetime')datetime.innerHTML=value;
 if(topic==='water/nextSchedule')nextSchedule.innerHTML=value;
 if(topic==='water/overrideTime'){
@@ -275,23 +326,23 @@ function sendOTA(){
     let binUrl = urlInput.value.trim();
     
     if(!binUrl){
-        alert("?? Harap masukkan URL file .bin terlebih dahulu!");
+        alert("⚠️ Harap masukkan URL file .bin terlebih dahulu!");
         return;
     }
     if(!binUrl.startsWith("http://") && !binUrl.startsWith("https://")){
-        alert("?? URL harus diawali dengan http:// atau https://");
+        alert("⚠️ URL harus diawali dengan http:// atau https://");
         return;
     }
-    if(!confirm("?? Apakah Anda yakin ingin mengupdate firmware dari URL berikut?\n\n" + binUrl + "\n\nESP32 akan mendownload dan otomatis me-restart jika berhasil.")){
+    if(!confirm("🔄 Apakah Anda yakin ingin mengupdate firmware dari URL berikut?\n\n" + binUrl + "\n\nESP32 akan mendownload dan otomatis me-restart jika berhasil.")){
         return;
     }
     
     if(client.connected){
         client.publish('water/ota', binUrl);
-        alert("?? Perintah OTA berhasil dikirim ke ESP32!\n\nSilakan pantau status progres pada kotak indikator di atas.");
+        alert("📡 Perintah OTA berhasil dikirim ke ESP32!\n\nSilakan pantau status progres pada kotak indikator di atas.");
         urlInput.value = "";
     }else{
-        alert("? Gagal: MQTT sedang Disconnected!");
+        alert("❌ Gagal: MQTT sedang Disconnected!");
     }
 }
 
