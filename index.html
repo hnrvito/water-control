@@ -119,7 +119,7 @@ let bypassMoving=false,sourceMoving=false,distMoving=false;
 // =====================================================
 // HEARTBEAT VARIABLES
 // =====================================================
-let lastHeartbeatEpoch = 0;
+let lastHeartbeatValue = 0;
 let lastHeartbeatRecvTime = 0;
 let espOnline = false;
 
@@ -143,19 +143,17 @@ setInterval(()=>{
   let espEl = document.getElementById('espStatus');
   let alarmBox = document.getElementById('alarmBox');
 
-  if(lastHeartbeatEpoch === 0){
+  if(lastHeartbeatRecvTime === 0){
     espOnline = false;
     espEl.innerHTML = 'MENUNGGU DATA...';
     espEl.style.color = 'gray';
     return;
   }
 
-  let nowEpoch = Math.floor(Date.now() / 1000);
-  let espAge = Math.abs(nowEpoch - lastHeartbeatEpoch);
   let recvAge = (Date.now() - lastHeartbeatRecvTime) / 1000;
 
-  // Anggap offline jika selisih waktu > 10 detik atau tidak terima data > 10 detik
-  if(espAge > 10 || recvAge > 10){
+  // Anggap offline jika tidak ada update data baru selama > 10 detik
+  if(recvAge > 10){
     if(espOnline !== false){
       espOnline = false;
       espEl.innerHTML = 'OFFLINE';
@@ -229,8 +227,11 @@ let value=msg.toString();
 
 // Tangkap Heartbeat
 if(topic==='water/heartbeat'){
-    lastHeartbeatEpoch = parseInt(value) || 0;
-    lastHeartbeatRecvTime = Date.now();
+    let val = parseInt(value) || 0;
+    if(val !== lastHeartbeatValue){
+      lastHeartbeatValue = val;
+      lastHeartbeatRecvTime = Date.now();
+    }
     return;
 }
 
