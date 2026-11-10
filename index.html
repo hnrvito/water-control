@@ -110,7 +110,7 @@ SISTEM NORMAL
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script>
-const MQTT_HOST="7670300b39ba4d55a0ec6d11ce773787.s1.eu.hivemq.cloud";
+const MQTT_HOST="b9d82fae.ala.asia-southeast1.emqxsl.com";
 const MQTT_USER="hnrvito";
 const MQTT_PASS="Jangandiingat1";
 
@@ -121,9 +121,10 @@ let bypassMoving=false,sourceMoving=false,distMoving=false;
 // =====================================================
 let lastHeartbeatValue = 0;
 let lastHeartbeatRecvTime = 0;
+const pageStartTime = Date.now();
 let espOnline = false;
 
-const client=mqtt.connect('wss://'+MQTT_HOST+':8884/mqtt',{username:MQTT_USER,password:MQTT_PASS});
+const client=mqtt.connect('wss://'+MQTT_HOST+':8084/mqtt',{username:MQTT_USER,password:MQTT_PASS});
 
 client.on('connect',()=>{
 document.getElementById('mqttStatus').innerHTML='CONNECTED';
@@ -143,17 +144,21 @@ setInterval(()=>{
   let espEl = document.getElementById('espStatus');
   let alarmBox = document.getElementById('alarmBox');
 
-  if(lastHeartbeatRecvTime === 0){
+  // Heartbeat dikirim ESP32 tiap ~4 detik (non-retained).
+  // Jika belum pernah menerima heartbeat, hitung dari saat halaman dibuka.
+  const HB_TIMEOUT = 15; // detik
+  let refTime = lastHeartbeatRecvTime || pageStartTime;
+  let recvAge = (Date.now() - refTime) / 1000;
+
+  if(lastHeartbeatRecvTime === 0 && recvAge <= HB_TIMEOUT){
     espOnline = false;
     espEl.innerHTML = 'MENUNGGU DATA...';
     espEl.style.color = 'gray';
     return;
   }
 
-  let recvAge = (Date.now() - lastHeartbeatRecvTime) / 1000;
-
-  // Anggap offline jika tidak ada update data baru selama > 10 detik
-  if(recvAge > 10){
+  // Anggap offline jika heartbeat tidak datang > 15 detik
+  if(recvAge > HB_TIMEOUT){
     if(espOnline !== false){
       espOnline = false;
       espEl.innerHTML = 'OFFLINE';
